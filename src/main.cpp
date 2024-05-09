@@ -1,5 +1,5 @@
 #include <mbed.h>
-
+#include <math.h>
 // =================================================
 // * Recitation 5: SPI and Gyroscope *
 // =================================================
@@ -25,6 +25,11 @@ void spi_cb(int event)
 }
 
 #define SCALING_FACTOR (17.5f * 0.0174532925199432957692236907684886f / 1000.0f)
+float_t convertAnguarToFrequency(float gx, float gy, float gz){
+    float_t omega = sqrt(pow(gx,2)+ pow(gy,2)+ pow(gz,2));
+    float_t frequency = omega/(2* M_PI);
+    return frequency;
+}
 
 
 
@@ -57,7 +62,7 @@ int main()
     while(1){
 
         uint16_t raw_gx, raw_gy, raw_gz;
-        float gx, gy, gz;
+        float gx, gy, gz, fq;
 
         // Prepare to read the gyroscope values starting from OUT_X_L
         write_buf[0] = OUT_X_L | 0x80 | 0x40;
@@ -82,11 +87,9 @@ int main()
         gx = ((float) raw_gx) * SCALING_FACTOR;
         gy = ((float) raw_gy) * SCALING_FACTOR;
         gz = ((float) raw_gz) * SCALING_FACTOR;
-
+        fq = convertAnguarToFrequency(gx,gy,gz);
         // Print the actual values
-        printf("Actual -> \t\tgx: %4.5f \t gy: %4.5f \t gz: %4.5f \t\n", gx, gy, gz);
-
-        
+        printf("Actual -> \t\tgx: %4.5f \t gy: %4.5f \t gz: %4.5f \t fq%4.5f \n", gx, gy, gz, fq);
         thread_sleep_for(100);
     }
 
